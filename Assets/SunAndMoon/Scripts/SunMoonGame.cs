@@ -100,14 +100,36 @@ namespace SunAndMoon
         }
         void Move(Partner p, float dt)
         {
-            p.position.x += p.velocity.x * dt; p.position.x = Mathf.Clamp(p.position.x, 88, 1191);
-            var body = new Rect(p.position.x - 11, p.position.y - 34, 22, 33);
+            float previousX = p.position.x;
+            p.position.x = Mathf.Clamp(p.position.x + p.velocity.x * dt, 88, 1191);
+            var body = Body(p);
             var solids = new List<Rect>(platforms); foreach (var b in links) if (b.gate && !b.active) solids.Add(b.deck);
-            foreach (var r in solids) if (body.Overlaps(r)) { p.position.x = p.velocity.x > 0 ? r.x - 11 : r.xMax + 11; p.velocity.x = 0; body.x = p.position.x - 11; }
+            foreach (var r in solids) ResolveHorizontal(p, ref body, r, previousX);
             float oldY = p.position.y; p.position.y += p.velocity.y * dt; p.grounded = false;
             foreach (var r in solids) ResolveVertical(p, oldY, r);
             foreach (var b in links) if (!b.gate && b.active) ResolveVertical(p, oldY, b.deck);
             foreach (var lift in lifts) ResolveVertical(p, oldY, lift.current);
+        }
+        Rect Body(Partner p) => new Rect(p.position.x - 11, p.position.y - 34, 22, 33);
+        // The lift meets the observatory a few pixels short of the roof. Treat that lip as a step, not a wall.
+        void ResolveHorizontal(Partner p, ref Rect body, Rect r, float previousX)
+        {
+            if (!body.Overlaps(r)) return;
+            const float ledge = 14f;
+            if (p.position.y >= r.y && p.position.y <= r.y + ledge)
+            {
+                if (p.position.x + 10f <= r.x && p.position.x + 16f > r.x) p.position.x = r.x - 9.5f;
+                else if (p.position.x - 10f >= r.xMax && p.position.x - 16f < r.xMax) p.position.x = r.xMax + 9.5f;
+                if (p.position.x + 10f > r.x && p.position.x - 10f < r.xMax)
+                {
+                    p.position.y = r.y; if (p.velocity.y > 0) p.velocity.y = 0; body = Body(p); return;
+                }
+            }
+            bool fromLeft = previousX + 11 <= r.x + .05f, fromRight = previousX - 11 >= r.xMax - .05f;
+            if (fromLeft) { p.position.x = r.x - 11; p.velocity.x = Mathf.Min(p.velocity.x, 0); }
+            else if (fromRight) { p.position.x = r.xMax + 11; p.velocity.x = Mathf.Max(p.velocity.x, 0); }
+            else return;
+            body = Body(p);
         }
         void ResolveVertical(Partner p, float oldY, Rect r)
         {

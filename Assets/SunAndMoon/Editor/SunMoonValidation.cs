@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 namespace SunAndMoon.Editor
 {
@@ -16,7 +17,23 @@ namespace SunAndMoon.Editor
         public static void Validate()
         {
             if(!EditorApplication.isPlaying) throw new Exception("Enter Play Mode first.");
-            var game=UnityEngine.Object.FindFirstObjectByType<SunMoonGame>();
+            Run(UnityEngine.Object.FindFirstObjectByType<SunMoonGame>());
+        }
+        public static void ValidateBatch()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/SunAndMoon.unity");
+            EditorApplication.EnterPlaymode();
+            EditorApplication.update += WaitForPlayMode;
+        }
+        static void WaitForPlayMode()
+        {
+            if(!EditorApplication.isPlaying) return;
+            EditorApplication.update -= WaitForPlayMode;
+            try { Validate(); EditorApplication.Exit(0); }
+            catch(Exception error) { Debug.LogException(error); EditorApplication.Exit(1); }
+        }
+        static void Run(SunMoonGame game)
+        {
             var flags=BindingFlags.Instance|BindingFlags.NonPublic;
             var bodies=(Array)typeof(SunMoonGame).GetField("players",flags).GetValue(game);
             void Set(int i,Vector2 p) { var b=bodies.GetValue(i); var t=b.GetType(); t.GetField("position").SetValue(b,p); t.GetField("velocity").SetValue(b,Vector2.zero); t.GetField("grounded").SetValue(b,true); t.GetField("buffer").SetValue(b,0f); }
@@ -100,12 +117,21 @@ namespace SunAndMoon.Editor
                 float minimum=700,maximum=0;
                 for(int f=0;f<480;f++) {Tick(Vector2.zero);minimum=Mathf.Min(minimum,game.SunPosition.y);maximum=Mathf.Max(maximum,game.SunPosition.y);Check(Mathf.Abs(game.SunPosition.y-lift.current.y)<3,"Lift must carry its rider.");}
                 Check(minimum<355 && maximum>605,"Lift must reach both stops.");
+                game.LoadLevel(5);
+                for(int f=0;f<260 && game.Lifts[0].current.y>350.5f;f++) Tick(Vector2.zero);
+                Check(game.Lifts[0].current.y<=351f,"Lift should reach the observatory height.");
+                Set(0,new Vector2(game.Lifts[0].current.center.x,game.Lifts[0].current.y)); Set(1,new Vector2(192,700));
+                for(int f=0;f<50;f++) Tick(new Vector2(1,0));
+                Check(game.SunPosition.x>720 && game.SunPosition.y<=360,"Sun must walk from the lift onto the observatory roof.");
+                game.LoadLevel(4); Set(0,new Vector2(760,700)); Set(1,new Vector2(192,700));
+                for(int f=0;f<40;f++) Tick(new Vector2(1,0));
+                Check(game.SunPosition.x<790 && Mathf.Abs(game.SunPosition.y-700)<2,"A closed gate must stop Sun instead of becoming a step.");
                 // Checkpoint changes both respawns after its preceding crossing is secured.
                 game.LoadLevel(8); game.Links[0].secured=true; Set(0,new Vector2(800,520)); Tick(Vector2.zero);
                 Set(0,new Vector2(800,820)); Set(1,new Vector2(800,820)); Tick(Vector2.zero);
                 Check(game.SunPosition.y==520 && game.MoonPosition.y==520,"Shared checkpoint must restore both partners above the lower hazard.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, checkpoint, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, checkpoint, and shared exits verified.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, and shared exits verified.");
             }
             finally
             {
