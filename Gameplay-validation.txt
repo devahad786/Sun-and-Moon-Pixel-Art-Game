@@ -1,0 +1,1 @@
+602 assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, checkpoint, and shared exits verified.

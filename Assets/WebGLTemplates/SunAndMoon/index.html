@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101c25">
+  <meta name="description" content="Sun & Moon: ten different pixel-art adventures for two partners and one keyboard.">
+  <title>Sun &amp; Moon · A little adventure, together</title>
+  <style>
+    *{box-sizing:border-box}body{--stage-width:min(1280px,calc(100vw - 40px),calc((100svh - 130px) * 1.6));margin:0;background:#0c171e;color:#f6e8ca;font:14px system-ui,sans-serif;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+    header,footer{width:var(--stage-width);display:flex;justify-content:space-between;align-items:center;gap:16px}header{padding:0 0 15px}h1{margin:0;font-size:17px;letter-spacing:3px}header span{color:#93a99e;font-size:12px}
+    main{position:relative;width:var(--stage-width);aspect-ratio:8/5;background:#142936;border:1px solid #3a514b;box-shadow:0 18px 80px #0006}
+    canvas{display:block;width:100%;height:100%;outline:none;image-rendering:pixelated}canvas:focus-visible{outline:2px solid #edbd62;outline-offset:3px}
+    #loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at bottom,#30483f,#142936);z-index:1;text-align:center;padding:24px}
+    #loading h2{font-size:clamp(24px,5vw,56px);letter-spacing:6px;margin:10px 0}#loading p{color:#93a99e;line-height:1.6}progress{width:min(280px,80%);height:8px;accent-color:#edbd62;margin-top:20px}
+    footer{padding-top:14px;color:#93a99e;font-size:12px}button{border:1px solid #52665a;background:#23393b;color:#f6e8ca;padding:10px 16px;font:inherit;cursor:pointer}button:hover{background:#374e4c}button:disabled{opacity:.4;cursor:wait}
+    #error{color:#f0baa0;max-width:600px;white-space:pre-wrap}#small-screen{display:none;color:#edbd62;text-align:center;line-height:1.5;font-size:12px}
+    @media(max-width:700px){body{padding:8px;--stage-width:min(calc(100vw - 16px),calc((100svh - 170px) * 1.6))}header span,footer span{display:none}#small-screen{display:block}h1{font-size:13px}footer{justify-content:flex-end}}
+  </style>
+</head>
+<body>
+  <header><h1>SUN &amp; MOON</h1><span>A LITTLE ADVENTURE, TOGETHER</span></header>
+  <p id="small-screen">Two-player keyboard game. For the best experience, use a desktop or laptop.</p>
+  <main>
+    <canvas id="unity-canvas" width="1280" height="800" tabindex="0" aria-label="Sun and Moon two-player game. Click Play Together to begin. Sun: A D W. Moon: arrow keys."></canvas>
+    <div id="loading"><h2>SUN &amp; MOON</h2><p id="status">Growing a little world for two…</p><progress id="progress" value="0" max="1"></progress><p id="error" role="alert"></p></div>
+  </main>
+  <footer><span>Sun: A / D + W &nbsp; · &nbsp; Moon: arrow keys &nbsp; · &nbsp; P: pause &nbsp; · &nbsp; R: restart</span><button id="fullscreen" disabled>FULLSCREEN ↗</button></footer>
+  <script>
+    const canvas=document.getElementById('unity-canvas'),loading=document.getElementById('loading'),status=document.getElementById('status'),error=document.getElementById('error'),fullscreen=document.getElementById('fullscreen');
+    canvas.addEventListener('pointerdown',()=>canvas.focus());
+    canvas.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault()});
+    function fail(message){loading.style.display='flex';status.textContent='The garden could not load.';error.textContent=String(message)+'\nPlease reload in a current desktop browser with WebGL 2 enabled.';document.getElementById('progress').hidden=true;}
+    if(location.protocol==='file:'){fail('This game needs an HTTP or HTTPS server. Use the included local preview launcher or upload this folder to a web host.');}
+    else {
+      const script=document.createElement('script');script.src='Build/{{{ LOADER_FILENAME }}}';
+      script.onerror=()=>fail('The game loader is missing or could not be downloaded.');
+      script.onload=()=>createUnityInstance(canvas,{
+        dataUrl:'Build/{{{ DATA_FILENAME }}}',frameworkUrl:'Build/{{{ FRAMEWORK_FILENAME }}}',codeUrl:'Build/{{{ CODE_FILENAME }}}',
+        streamingAssetsUrl:'StreamingAssets',companyName:{{{ JSON.stringify(COMPANY_NAME) }}},productName:{{{ JSON.stringify(PRODUCT_NAME) }}},productVersion:{{{ JSON.stringify(PRODUCT_VERSION) }}},
+        matchWebGLToCanvasSize:true,devicePixelRatio:Math.min(window.devicePixelRatio||1,2),
+        showBanner:(message,type)=>{if(type==='error')fail(message);else console.warn(message)}
+      },progress=>document.getElementById('progress').value=progress).then(instance=>{
+        loading.style.display='none';fullscreen.disabled=false;fullscreen.onclick=()=>{canvas.focus();instance.SetFullscreen(1)};
+        // Only the game menu's Play button starts simulation and enables sound.
+        window.sunMoonInstance=instance;
+      }).catch(fail);
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>
