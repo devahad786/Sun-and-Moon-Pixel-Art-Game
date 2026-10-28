@@ -37,6 +37,7 @@ namespace SunAndMoon.Editor
             var flags=BindingFlags.Instance|BindingFlags.NonPublic;
             var bodies=(Array)typeof(SunMoonGame).GetField("players",flags).GetValue(game);
             void Set(int i,Vector2 p) { var b=bodies.GetValue(i); var t=b.GetType(); t.GetField("position").SetValue(b,p); t.GetField("velocity").SetValue(b,Vector2.zero); t.GetField("grounded").SetValue(b,true); t.GetField("buffer").SetValue(b,0f); }
+            void Field(int i,string name,object value) { var b=bodies.GetValue(i); b.GetType().GetField(name).SetValue(b,value); }
             Vector2 Pos(int i) => i==0?game.SunPosition:game.MoonPosition;
             void Hearts(bool taken) { foreach(var h in (IEnumerable)typeof(SunMoonGame).GetField("hearts",flags).GetValue(game)) h.GetType().GetField("taken").SetValue(h,taken); }
             void Tick(Vector2 movement) => game.Simulate(1f/60,movement,false,false);
@@ -130,8 +131,26 @@ namespace SunAndMoon.Editor
                 game.LoadLevel(8); game.Links[0].secured=true; Set(0,new Vector2(800,520)); Tick(Vector2.zero);
                 Set(0,new Vector2(800,820)); Set(1,new Vector2(800,820)); Tick(Vector2.zero);
                 Check(game.SunPosition.y==520 && game.MoonPosition.y==520,"Shared checkpoint must restore both partners above the lower hazard.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, and shared exits verified.");
+                // A held jump clears more height than a tap, and a jump pressed into a hazard does not fire again at the spawn.
+                game.LoadLevel(0); Set(0,new Vector2(132,700));
+                float heldApex=700f;
+                game.Simulate(1f/60,Vector2.zero,true,false,true,true);
+                for(int f=0;f<80;f++) { game.Simulate(1f/60,Vector2.zero,false,false,true,true); heldApex=Mathf.Min(heldApex,game.SunPosition.y); }
+                Set(0,new Vector2(132,700));
+                float tapApex=700f;
+                game.Simulate(1f/60,Vector2.zero,true,false,true,true);
+                for(int f=0;f<80;f++) { game.Simulate(1f/60,Vector2.zero,false,false,false,true); tapApex=Mathf.Min(tapApex,game.SunPosition.y); }
+                Check(heldApex<600f,"Holding jump must still clear a full leap.");
+                Check(tapApex>heldApex+40f,"Releasing jump must shorten the hop.");
+                Set(0,new Vector2(200,700)); Field(0,"velocity",new Vector2(215f,0f));
+                for(int f=0;f<12;f++) Tick(Vector2.zero);
+                Check(game.SunPosition.x<208f && game.SunPosition.x>200f,"Releasing move on the ground must stop within a short step.");
+                Set(1,new Vector2(380,660)); Field(1,"grounded",false); Field(1,"grace",0f); Field(1,"buffer",0f);
+                game.Simulate(1f/60,Vector2.zero,false,true,true,true);
+                for(int f=0;f<20;f++) Tick(Vector2.zero);
+                Check(Mathf.Abs(game.MoonPosition.x-192f)<2f && Mathf.Abs(game.MoonPosition.y-700f)<2f,"A jump pressed into a hazard must not launch Moon off the respawn.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, and shared exits verified.");
             }
             finally
             {

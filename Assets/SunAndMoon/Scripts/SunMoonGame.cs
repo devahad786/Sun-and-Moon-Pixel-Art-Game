@@ -67,10 +67,11 @@ namespace SunAndMoon
             if (mode != Mode.Playing) return;
             if (Press(Key.R)) { LoadLevel(levelIndex); return; }
             Vector2 movement = new Vector2((Held(Key.D) ? 1 : 0) - (Held(Key.A) ? 1 : 0), (Held(Key.RightArrow) ? 1 : 0) - (Held(Key.LeftArrow) ? 1 : 0));
-            Simulate(Mathf.Min(Time.deltaTime, .033f), movement, Press(Key.W), Press(Key.UpArrow));
+            Simulate(Mathf.Min(Time.deltaTime, .033f), movement, Press(Key.W), Press(Key.UpArrow), Held(Key.W), Held(Key.UpArrow));
         }
         // Shared by live keyboard play and the deterministic editor route checks.
-        public void Simulate(float dt, Vector2 movement, bool sunJump, bool moonJump)
+        // Jump-held defaults to true so existing route checks keep the full leap.
+        public void Simulate(float dt, Vector2 movement, bool sunJump, bool moonJump, bool sunJumpHeld = true, bool moonJumpHeld = true)
         {
             if (mode != Mode.Playing) return;
             elapsed += dt; flash = Mathf.Max(0, flash - dt); toastTime -= dt;
@@ -78,11 +79,15 @@ namespace SunAndMoon
             for (int i = 0; i < 2; i++)
             {
                 var p = players[i]; float direction = Mathf.Clamp(i == 0 ? movement.x : movement.y, -1, 1);
+                bool jumpHeld = i == 0 ? sunJumpHeld : moonJumpHeld;
                 if (i == 0 ? sunJump : moonJump) p.buffer = .14f; else p.buffer -= dt;
                 p.grace = p.grounded ? .12f : p.grace - dt;
                 if (p.buffer > 0 && p.grace > 0) { p.velocity.y = -530; p.buffer = 0; p.grace = 0; p.grounded = false; }
-                p.velocity.x = Mathf.MoveTowards(p.velocity.x, direction * 215, dt * 1700);
-                p.velocity.y = Mathf.Min(p.velocity.y + 1150 * dt, 650);
+                float accel = direction == 0 && p.grounded ? 3400f : 1700f;
+                p.velocity.x = Mathf.MoveTowards(p.velocity.x, direction * 215, dt * accel);
+                // Y points down. Extra gravity while rising and the key is up turns a tap into a shorter hop.
+                float gravity = !jumpHeld && p.velocity.y < 0 ? 2800f : 1150f;
+                p.velocity.y = Mathf.Min(p.velocity.y + gravity * dt, 650);
                 Move(p, dt);
                 if (p.position.y > 810) { Respawn(i); continue; }
                 foreach (var pool in pools)
@@ -139,7 +144,9 @@ namespace SunAndMoon
         }
         void Respawn(int i)
         {
-            players[i].position = players[i].spawn; players[i].velocity = Vector2.zero; retries++; flash = .2f;
+            var p = players[i];
+            p.position = p.spawn; p.velocity = Vector2.zero; p.buffer = 0; p.grace = 0; p.grounded = true;
+            retries++; flash = .2f;
             toast = "Take your time. You've got each other."; toastTime = 2.5f; PlaySound(resetSound);
         }
         void OnGUI()
@@ -196,8 +203,8 @@ namespace SunAndMoon
         void DrawFooter()
         {
             Box(0, 766, 1280, 34, Hex("111f28")); Box(0, 766, 1280, 1, Hex("35483f"));
-            Label("SUN", 39, 777, 39, 10, gold, TextAnchor.UpperLeft, true); Label("A  D   move     W   jump", 85, 775, 238, 12, cream);
-            Label("MOON", 356, 777, 51, 10, blue, TextAnchor.UpperLeft, true); Label("<  >   move     UP   jump", 419, 775, 250, 12, cream);
+            Label("SUN", 39, 777, 39, 10, gold, TextAnchor.UpperLeft, true); Label("A  D   move     hold W jump", 85, 775, 250, 12, cream);
+            Label("MOON", 356, 777, 51, 10, blue, TextAnchor.UpperLeft, true); Label("<  >   move     hold UP jump", 419, 775, 270, 12, cream);
             Label("R  restart     P / ESC  pause", 778, 775, 230, 12, muted); Label("NO RUSH. JUST US.", 1050, 777, 192, 10, gold, TextAnchor.MiddleRight);
         }
         void DrawPause()
