@@ -17,7 +17,7 @@ namespace SunAndMoon
         public Vector2 SunPosition => players[0].position;
         public Vector2 MoonPosition => players[1].position;
         public string Toast => toast;
-        class Partner { public Vector2 position, velocity; public bool grounded; public float grace, buffer; public Vector2 spawn; }
+        class Partner { public Vector2 position, velocity; public bool grounded, wasGrounded = true; public float grace, buffer, face = 1, squash; public Vector2 spawn; }
         class Heart { public Vector2 p; public int owner; public bool taken; }
         struct Pool { public Rect r; public int owner; public Pool(float x, float w, int type) { r = new Rect(x, 676, w, 24); owner = type; } }
         readonly Partner[] players = { new Partner(), new Partner() };
@@ -90,6 +90,10 @@ namespace SunAndMoon
                 float gravity = !jumpHeld && p.velocity.y < 0 ? 2800f : 1150f;
                 p.velocity.y = Mathf.Min(p.velocity.y + gravity * dt, 650);
                 Move(p, dt);
+                if (Mathf.Abs(p.velocity.x) > 8) p.face = Mathf.Sign(p.velocity.x);
+                if (p.grounded && !p.wasGrounded) p.squash = 1f;
+                p.squash = Mathf.MoveTowards(p.squash, 0, dt * 5f);
+                p.wasGrounded = p.grounded;
                 if (p.position.y > 810) { Respawn(i); continue; }
                 foreach (var pool in pools)
                     if (p.position.x > pool.r.x + 4 && p.position.x < pool.r.xMax - 4 && p.position.y > pool.r.y + 1 && p.position.y <= pool.r.yMax + 12 && pool.owner != i) { Respawn(i); break; }
@@ -146,7 +150,7 @@ namespace SunAndMoon
         void Respawn(int i)
         {
             var p = players[i];
-            p.position = p.spawn; p.velocity = Vector2.zero; p.buffer = 0; p.grace = 0; p.grounded = true;
+            p.position = p.spawn; p.velocity = Vector2.zero; p.buffer = 0; p.grace = 0; p.grounded = true; p.wasGrounded = true; p.squash = 0;
             retries++; flash = .2f;
             toast = "Take your time. You've got each other."; toastTime = 2.5f; PlaySound(resetSound);
         }
@@ -195,9 +199,18 @@ namespace SunAndMoon
             {
                 var p = players[i]; Box(p.position.x - 16, p.position.y - 2, 32, 4, new Color(0, 0, 0, .2f));
                 float bob = p.grounded && Mathf.Abs(p.velocity.x) > 10 ? Mathf.Sin(Time.time * 20) * 2 : 0;
-                GUI.DrawTexture(new Rect(Mathf.Round(p.position.x - 20), Mathf.Round(p.position.y - 44 + bob), 40, 44), i == 0 ? sunSprite : moonSprite);
-                Label(i == 0 ? "SUN" : "MOON", p.position.x - 37, p.position.y - 65, 74, 10, i == 0 ? gold : blue, TextAnchor.MiddleCenter, true);
-                Box(p.position.x - 2, p.position.y - 49, 4, 3, i == 0 ? gold : blue);
+                bool rising = !p.grounded && p.velocity.y < -40;
+                float fat = rising ? .9f : 1f + p.squash * .22f;
+                float tall = rising ? 1.1f : 1f - p.squash * .18f;
+                float drawW = 40 * fat, drawH = 44 * tall;
+                float drawX = Mathf.Round(p.position.x - drawW * .5f);
+                float drawY = Mathf.Round(p.position.y - drawH + bob);
+                var sprite = i == 0 ? sunSprite : moonSprite;
+                if (p.face < 0) GUI.DrawTexture(new Rect(drawX + drawW, drawY, -drawW, drawH), sprite);
+                else GUI.DrawTexture(new Rect(drawX, drawY, drawW, drawH), sprite);
+                if (p.squash > .2f) Box(p.position.x - 10 - p.squash * 6, p.position.y - 1, 20 + p.squash * 12, 2, new Color(1, 1, 1, p.squash * .35f));
+                Label(i == 0 ? "SUN" : "MOON", p.position.x - 37, p.position.y - 65 - (rising ? 4 : 0), 74, 10, i == 0 ? gold : blue, TextAnchor.MiddleCenter, true);
+                Box(p.position.x - 2, p.position.y - 49 - (rising ? 4 : 0), 4, 3, i == 0 ? gold : blue);
             }
             if (flash > 0) Box(72, 205, 1136, 550, new Color(1, .8f, .6f, flash * .25f));
         }

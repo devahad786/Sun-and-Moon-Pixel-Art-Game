@@ -1,5 +1,9 @@
 # Development log
 
+## Session 4 — November 2, 2026
+
+Partners now face the direction they are moving, stretch slightly while rising through a jump, and squash for a short beat on landing. A soft ground flash marks the impact. The original pixel sprites are unchanged; only the draw size and horizontal flip change with motion.
+
 ## Session 3 — November 2, 2026
 
 Timed bridges already show a countdown, but partners standing on the deck still had no clear cue that the charge was about to fail. When a timed crossing drops to 1.2 seconds or less, is no longer held, and a partner is still on the deck, the game now shows one "Bridge fading — keep moving!" toast for that charge. Holding the plate again clears the warning so a later fade can warn once more.

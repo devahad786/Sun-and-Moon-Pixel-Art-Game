@@ -111,7 +111,7 @@ namespace SunAndMoon
                     checkpoint=new Vector2(680,700); Exits(1090,520,1150,520);
                     H(230,580,0); H(365,490,1); H(680,580,1); H(1110,580,0); break;
             }
-            foreach(var p in players) { p.position=p.spawn; p.velocity=Vector2.zero; p.grounded=true; p.grace=.12f; p.buffer=0; }
+            foreach(var p in players) { p.position=p.spawn; p.velocity=Vector2.zero; p.grounded=true; p.wasGrounded=true; p.grace=.12f; p.buffer=0; p.squash=0; p.face=1; }
             if (backdrop) Destroy(backdrop); backdrop=MakeBackdrop();
             toast=""; toastTime=0;
         }
