@@ -1,5 +1,9 @@
 # Development log
 
+## Session 6 — November 2, 2026
+
+Final review pass. Movement and jump values now live as named constants shared with the timed-bridge fade threshold. Chapter 7's tip mentions the one-time fade warning. The README documents controls, Unity play steps, and the Play Mode validation menu. Earlier session changes were re-checked against the shared Simulate path used by live play and the editor assertions.
+
 ## Session 5 — November 2, 2026
 
 Pause now shows time spent together and retry count for the current chapter. The complete screen shows retries too, and Escape from a finished chapter opens the chapter map instead of doing nothing. Map Back returns to play when a chapter is already underway, otherwise to the title. The title control hints match the hold-to-jump controls, and returning to the title clears leftover toast text.

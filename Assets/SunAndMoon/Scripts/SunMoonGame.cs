@@ -25,7 +25,7 @@ namespace SunAndMoon
         readonly List<Pool> pools = new List<Pool>();
         readonly List<Heart> hearts = new List<Heart>();
         readonly string[] names = { "A little leap of faith", "On opposite shores", "Up where we belong", "Pass it on", "The keepsake vault", "Love lifts us up", "Before the light fades", "Two sides of the story", "A place to return to", "Home is with you" };
-        readonly string[] tips = { "Hold switch 1 while your partner crosses to bell 1. Then follow them home.", "Starting apart: Moon holds the blue switch on the right. Sun rings the left bell.", "Climb the tower together. The crossing and your home are high above the garden.", "Two crossings, two acts of kindness. Take turns holding the island switches.", "Find all four colored keepsakes to power the vault gate. Then work the switch.", "Ride the moving lift to the roof. Moon controls the blue observatory gate.", "The bridge stays charged for 3.5 seconds after you leave its switch. Keep moving!", "Moon controls the lower crossing. Sun controls the upper one. Secure both paths.", "Cross the terraces, save your shared checkpoint, then climb to the final bridge.", "Gather every keepsake. Timed bridge, shared checkpoint, Sun's switch, and home." };
+        readonly string[] tips = { "Hold switch 1 while your partner crosses to bell 1. Then follow them home.", "Starting apart: Moon holds the blue switch on the right. Sun rings the left bell.", "Climb the tower together. The crossing and your home are high above the garden.", "Two crossings, two acts of kindness. Take turns holding the island switches.", "Find all four colored keepsakes to power the vault gate. Then work the switch.", "Ride the moving lift to the roof. Moon controls the blue observatory gate.", "The bridge stays charged for 3.5 seconds after you leave its switch. A fading deck warns you once.", "Moon controls the lower crossing. Sun controls the upper one. Secure both paths.", "Cross the terraces, save your shared checkpoint, then climb to the final bridge.", "Gather every keepsake. Timed bridge, shared checkpoint, Sun's switch, and home." };
         Color ink = Hex("101c25"), cream = Hex("f6e8ca"), muted = Hex("93a99e"), gold = Hex("edbd62"), blue = Hex("89c9dc");
         Texture2D backdrop, sunSprite, moonSprite, heartSprite;
         GUIStyle textStyle;
@@ -34,6 +34,17 @@ namespace SunAndMoon
         float elapsed, flash, toastTime;
         string toast = "";
         int retries;
+
+        const float MoveSpeed = 215f;
+        const float AirAccel = 1700f;
+        const float GroundStopAccel = 3400f;
+        const float FallGravity = 1150f;
+        const float ShortHopGravity = 2800f;
+        const float JumpSpeed = -530f;
+        const float MaxFall = 650f;
+        const float JumpBuffer = .14f;
+        const float CoyoteTime = .12f;
+        const float FadeWarnSeconds = 1.2f;
 
         Rect exitSun, exitMoon;
         AudioSource audioSource;
@@ -86,14 +97,14 @@ namespace SunAndMoon
             {
                 var p = players[i]; float direction = Mathf.Clamp(i == 0 ? movement.x : movement.y, -1, 1);
                 bool jumpHeld = i == 0 ? sunJumpHeld : moonJumpHeld;
-                if (i == 0 ? sunJump : moonJump) p.buffer = .14f; else p.buffer -= dt;
-                p.grace = p.grounded ? .12f : p.grace - dt;
-                if (p.buffer > 0 && p.grace > 0) { p.velocity.y = -530; p.buffer = 0; p.grace = 0; p.grounded = false; }
-                float accel = direction == 0 && p.grounded ? 3400f : 1700f;
-                p.velocity.x = Mathf.MoveTowards(p.velocity.x, direction * 215, dt * accel);
+                if (i == 0 ? sunJump : moonJump) p.buffer = JumpBuffer; else p.buffer -= dt;
+                p.grace = p.grounded ? CoyoteTime : p.grace - dt;
+                if (p.buffer > 0 && p.grace > 0) { p.velocity.y = JumpSpeed; p.buffer = 0; p.grace = 0; p.grounded = false; }
+                float accel = direction == 0 && p.grounded ? GroundStopAccel : AirAccel;
+                p.velocity.x = Mathf.MoveTowards(p.velocity.x, direction * MoveSpeed, dt * accel);
                 // Y points down. Extra gravity while rising and the key is up turns a tap into a shorter hop.
-                float gravity = !jumpHeld && p.velocity.y < 0 ? 2800f : 1150f;
-                p.velocity.y = Mathf.Min(p.velocity.y + gravity * dt, 650);
+                float gravity = !jumpHeld && p.velocity.y < 0 ? ShortHopGravity : FallGravity;
+                p.velocity.y = Mathf.Min(p.velocity.y + gravity * dt, MaxFall);
                 Move(p, dt);
                 if (Mathf.Abs(p.velocity.x) > 8) p.face = Mathf.Sign(p.velocity.x);
                 if (p.grounded && !p.wasGrounded) p.squash = 1f;
