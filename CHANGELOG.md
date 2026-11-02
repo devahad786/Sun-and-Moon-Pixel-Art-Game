@@ -1,5 +1,9 @@
 # Development log
 
+## Session 5 — November 2, 2026
+
+Pause now shows time spent together and retry count for the current chapter. The complete screen shows retries too, and Escape from a finished chapter opens the chapter map instead of doing nothing. Map Back returns to play when a chapter is already underway, otherwise to the title. The title control hints match the hold-to-jump controls, and returning to the title clears leftover toast text.
+
 ## Session 4 — November 2, 2026
 
 Partners now face the direction they are moving, stretch slightly while rising through a jump, and squash for a short beat on landing. A soft ground flash marks the impact. The original pixel sprites are unchanged; only the draw size and horizontal flip change with motion.

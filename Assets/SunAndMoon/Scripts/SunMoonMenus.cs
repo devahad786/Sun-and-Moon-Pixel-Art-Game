@@ -15,8 +15,8 @@ namespace SunAndMoon
             GUI.DrawTexture(new Rect(527,440,80,88),sunSprite); GUI.DrawTexture(new Rect(674,440,80,88),moonSprite);
             GUI.color=gold; GUI.DrawTexture(new Rect(627,464,26,24),heartSprite); GUI.color=Color.white;
             if(Button(Unlocked>1?"PLAY  /  CONTINUE CHAPTER "+Unlocked.ToString("00"):"PLAY TOGETHER  >",new Rect(430,552,420,64),true)) StartAdventure();
-            Label("SUN    A / D to move  ·  W to jump",260,657,360,15,gold,TextAnchor.MiddleCenter);
-            Label("MOON    Arrow keys to move & jump",656,657,385,15,blue,TextAnchor.MiddleCenter);
+            Label("SUN    A / D to move  ·  hold W to jump",260,657,380,15,gold,TextAnchor.MiddleCenter);
+            Label("MOON    arrows to move  ·  hold UP to jump",640,657,400,15,blue,TextAnchor.MiddleCenter);
             Label("Desktop browser  ·  Sound begins after Play  ·  Progress saves on this browser",240,728,800,12,muted,TextAnchor.MiddleCenter);
         }
         void DrawPuzzles()

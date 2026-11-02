@@ -64,7 +64,12 @@ namespace SunAndMoon
         bool Held(Key key) => Keyboard.current != null && Keyboard.current[key].isPressed;
         void Update()
         {
-            if (Press(Key.Escape) || Press(Key.P)) { if (mode == Mode.Playing) mode = Mode.Paused; else if (mode == Mode.Paused || mode == Mode.Map) mode = Mode.Playing; }
+            if (Press(Key.Escape) || Press(Key.P))
+            {
+                if (mode == Mode.Playing) mode = Mode.Paused;
+                else if (mode == Mode.Paused || mode == Mode.Map) mode = Mode.Playing;
+                else if (mode == Mode.Complete) mode = Mode.Map;
+            }
             if (mode != Mode.Playing) return;
             if (Press(Key.R)) { LoadLevel(levelIndex); return; }
             Vector2 movement = new Vector2((Held(Key.D) ? 1 : 0) - (Held(Key.A) ? 1 : 0), (Held(Key.RightArrow) ? 1 : 0) - (Held(Key.LeftArrow) ? 1 : 0));
@@ -225,7 +230,7 @@ namespace SunAndMoon
         {
             Scrim(); Panel(400, 215, 480, 388); Label("TAKE A BREATHER", 425, 249, 430, 11, gold, TextAnchor.MiddleCenter);
             Label("We'll wait for you.", 425, 305, 430, 32, cream, TextAnchor.MiddleCenter, true);
-            Label("Two partners. One little adventure.", 425, 356, 430, 16, muted, TextAnchor.MiddleCenter);
+            Label(Mathf.FloorToInt(elapsed / 60) + ":" + ((int)elapsed % 60).ToString("00") + " together     ·     " + retries + " retries", 425, 356, 430, 16, muted, TextAnchor.MiddleCenter);
             if (Button("BACK TOGETHER  >", new Rect(463, 403, 354, 48), true)) mode = Mode.Playing;
             if (Button("RESTART CHAPTER", new Rect(463, 466, 354, 42), false)) LoadLevel(levelIndex);
             if (Button("MAIN MENU", new Rect(463, 526, 354, 42), false)) ReturnToTitle();
@@ -240,7 +245,7 @@ namespace SunAndMoon
                 if (Button(unlocked ? (i + 1).ToString("00") : "LOCKED", new Rect(x, y, 156, 71), i == levelIndex) && unlocked) LoadLevel(i);
                 Label(i < Unlocked ? PlayerPrefs.GetInt("SunMoon.Hearts." + i) + " / 4 keepsakes" : "Keep growing", x, y + 78, 156, 11, muted, TextAnchor.MiddleCenter);
             }
-            if (Button("BACK", new Rect(536, 605, 208, 34), false)) mode = Mode.Playing;
+            if (Button("BACK", new Rect(536, 605, 208, 34), false)) mode = HasStarted && levelIndex < Unlocked ? Mode.Playing : Mode.Title;
         }
         void DrawComplete()
         {
@@ -248,10 +253,11 @@ namespace SunAndMoon
             GUI.color = gold; GUI.DrawTexture(new Rect(614, 244, 52, 46), heartSprite); GUI.color = Color.white;
             Label(levelIndex == 9 ? "HOME, AT LAST" : "A LITTLE CLOSER", 390, 310, 500, 12, gold, TextAnchor.MiddleCenter);
             Label(levelIndex == 9 ? "Home is with you." : "Made it. Together.", 390, 347, 500, 34, cream, TextAnchor.MiddleCenter, true);
-            Label(HeartCount + " / 4 keepsakes     ·     " + Mathf.FloorToInt(elapsed / 60) + ":" + ((int)elapsed % 60).ToString("00") + " together", 390, 406, 500, 16, muted, TextAnchor.MiddleCenter);
+            Label(HeartCount + " / 4 keepsakes     ·     " + Mathf.FloorToInt(elapsed / 60) + ":" + ((int)elapsed % 60).ToString("00") + " together     ·     " + retries + " retries", 390, 406, 500, 16, muted, TextAnchor.MiddleCenter);
             Label("Every small act of kindness builds a bridge.", 390, 443, 500, 14, cream, TextAnchor.MiddleCenter);
             if (Button(levelIndex == 9 ? "OUR JOURNEY  >" : "NEXT CHAPTER  >", new Rect(431, 493, 418, 50), true)) { if (levelIndex < 9) LoadLevel(levelIndex + 1); else mode = Mode.Map; }
             if (Button("PLAY THIS CHAPTER AGAIN", new Rect(431, 559, 418, 38), false)) LoadLevel(levelIndex);
+            Label("ESC opens chapters", 390, 605, 500, 12, muted, TextAnchor.MiddleCenter);
         }
         void Scrim() { Box(0, 100, 1280, 666, new Color(.025f, .06f, .08f, .88f)); }
         void Panel(float x, float y, float w, float h) { Box(x + 7, y + 7, w, h, Hex("0c171e")); Box(x, y, w, h, Hex("52614c")); Box(x + 2, y + 2, w - 4, h - 4, Hex("182b30")); Box(x + 18, y + 18, 5, 5, gold); Box(x + w - 23, y + 18, 5, 5, gold); }

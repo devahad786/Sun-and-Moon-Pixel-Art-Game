@@ -156,8 +156,12 @@ namespace SunAndMoon.Editor
                 for(int f=0;f<240 && game.Links[0].remaining>1.15f;f++) Tick(Vector2.zero);
                 Tick(Vector2.zero);
                 Check(game.Toast.IndexOf("fading",System.StringComparison.OrdinalIgnoreCase)>=0,"A partner on a fading timed bridge must get one warning toast.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, and shared exits verified.");
+                game.mode=SunMoonGame.Mode.Complete; game.ReturnToTitle();
+                Check(game.mode==SunMoonGame.Mode.Title && game.Toast=="","Returning to the title must clear leftover toast text.");
+                game.StartAdventure(); game.mode=SunMoonGame.Mode.Complete;
+                Check(game.mode==SunMoonGame.Mode.Complete,"Complete mode must remain until the player chooses a next step.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, and shared exits verified.");
             }
             finally
             {

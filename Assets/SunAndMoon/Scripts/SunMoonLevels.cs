@@ -41,7 +41,7 @@ namespace SunAndMoon
             audioSource.enabled = true;
             LoadLevel(Mathf.Max(0, Unlocked - 1));
         }
-        public void ReturnToTitle() { mode = Mode.Title; }
+        public void ReturnToTitle() { mode = Mode.Title; toast = ""; toastTime = 0; }
         public void LoadLevel(int index)
         {
             levelIndex = Mathf.Clamp(index, 0, 9); mode = Mode.Playing;
