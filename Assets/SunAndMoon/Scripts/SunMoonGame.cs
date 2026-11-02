@@ -16,6 +16,7 @@ namespace SunAndMoon
         public bool BridgeLatched => AllSecured();
         public Vector2 SunPosition => players[0].position;
         public Vector2 MoonPosition => players[1].position;
+        public string Toast => toast;
         class Partner { public Vector2 position, velocity; public bool grounded; public float grace, buffer; public Vector2 spawn; }
         class Heart { public Vector2 p; public int owner; public bool taken; }
         struct Pool { public Rect r; public int owner; public Pool(float x, float w, int type) { r = new Rect(x, 676, w, 24); owner = type; } }

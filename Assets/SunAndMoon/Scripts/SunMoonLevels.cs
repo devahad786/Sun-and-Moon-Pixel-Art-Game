@@ -11,7 +11,7 @@ namespace SunAndMoon
             public Vector2 plate, bell;
             public int owner = -1, keepsakes;
             public float duration, remaining;
-            public bool gate, active, secured;
+            public bool gate, active, secured, fadeWarned;
         }
         public sealed class Lift
         {
@@ -129,11 +129,22 @@ namespace SunAndMoon
             {
                 bool held=false;
                 for(int i=0;i<2;i++) if((b.owner<0 || b.owner==i) && At(players[i],b.plate)) held=true;
-                if(held && HeartCount>=b.keepsakes) b.remaining=b.duration;
+                if(held && HeartCount>=b.keepsakes) { b.remaining=b.duration; b.fadeWarned=false; }
                 else b.remaining=Mathf.Max(0,b.remaining-dt);
                 b.active=b.secured || (HeartCount>=b.keepsakes && (held || b.remaining>0));
                 if(!b.secured && b.active && (At(players[0],b.bell) || At(players[1],b.bell)))
                 { b.secured=true; b.active=true; toast="Crossing secured. Your turn to follow!"; toastTime=3; PlaySound(chime); }
+                // Timed bridges give one warning while a partner is still on the deck and the charge is nearly gone.
+                if(b.duration>0 && !b.secured && b.active && !held && !b.fadeWarned && b.remaining>0 && b.remaining<=1.2f)
+                {
+                    bool onDeck=false;
+                    for(int i=0;i<2;i++)
+                    {
+                        var p=players[i];
+                        if(p.grounded && Mathf.Abs(p.position.y-b.deck.y)<4 && p.position.x+10>b.deck.x && p.position.x-10<b.deck.xMax) onDeck=true;
+                    }
+                    if(onDeck) { toast="Bridge fading — keep moving!"; toastTime=2.2f; b.fadeWarned=true; }
+                }
             }
             foreach(var lift in lifts)
             {

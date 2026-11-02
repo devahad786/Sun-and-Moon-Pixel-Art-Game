@@ -149,8 +149,15 @@ namespace SunAndMoon.Editor
                 game.Simulate(1f/60,Vector2.zero,false,true,true,true);
                 for(int f=0;f<20;f++) Tick(Vector2.zero);
                 Check(Mathf.Abs(game.MoonPosition.x-192f)<2f && Mathf.Abs(game.MoonPosition.y-700f)<2f,"A jump pressed into a hazard must not launch Moon off the respawn.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, and shared exits verified.");
+                // Timed bridge warns once while a partner is still on a fading deck.
+                game.LoadLevel(6); Set(0,game.Links[0].plate); Set(1,new Vector2(1140,700)); Tick(Vector2.zero);
+                Check(game.Links[0].active,"Chapter seven plate must power the timed bridge.");
+                Set(0,new Vector2(game.Links[0].deck.center.x,game.Links[0].deck.y));
+                for(int f=0;f<240 && game.Links[0].remaining>1.15f;f++) Tick(Vector2.zero);
+                Tick(Vector2.zero);
+                Check(game.Toast.IndexOf("fading",System.StringComparison.OrdinalIgnoreCase)>=0,"A partner on a fading timed bridge must get one warning toast.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, and shared exits verified.");
             }
             finally
             {

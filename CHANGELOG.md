@@ -1,5 +1,9 @@
 # Development log
 
+## Session 3 — November 2, 2026
+
+Timed bridges already show a countdown, but partners standing on the deck still had no clear cue that the charge was about to fail. When a timed crossing drops to 1.2 seconds or less, is no longer held, and a partner is still on the deck, the game now shows one "Bridge fading — keep moving!" toast for that charge. Holding the plate again clears the warning so a later fade can warn once more.
+
 ## Session 2 — October 28, 2026
 
 Jump height no longer ignores the key after the press. Holding W or Up keeps the full leap. Releasing it while a partner is still rising adds gravity, so a tap is a shorter hop. Letting go of A, D, or the arrows on the ground now stops in a shorter step instead of sliding the same distance it takes to reach full speed.
