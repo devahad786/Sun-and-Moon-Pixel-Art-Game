@@ -160,8 +160,15 @@ namespace SunAndMoon.Editor
                 Check(game.mode==SunMoonGame.Mode.Title && game.Toast=="","Returning to the title must clear leftover toast text.");
                 game.StartAdventure(); game.mode=SunMoonGame.Mode.Complete;
                 Check(game.mode==SunMoonGame.Mode.Complete,"Complete mode must remain until the player chooses a next step.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, and shared exits verified.");
+                // Early home visits explain what is still missing instead of failing silently.
+                game.LoadLevel(0); Set(0,new Vector2(game.SunExit.center.x,game.SunExit.yMax)); Set(1,new Vector2(192,700)); Tick(Vector2.zero);
+                Check(game.mode==SunMoonGame.Mode.Playing,"One partner at home must not finish chapter one early.");
+                Check(game.Toast.IndexOf("crossing",System.StringComparison.OrdinalIgnoreCase)>=0,"Waiting at home before crossings are secured must explain the missing step.");
+                game.LoadLevel(0); foreach(var b in game.Links){b.secured=true;b.active=true;}
+                Set(0,new Vector2(game.SunExit.center.x,game.SunExit.yMax)); Set(1,new Vector2(192,700)); Tick(Vector2.zero);
+                Check(game.Toast.IndexOf("partner",System.StringComparison.OrdinalIgnoreCase)>=0,"Waiting alone at a ready home must ask for the other partner.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, and shared exits verified.");
             }
             finally
             {

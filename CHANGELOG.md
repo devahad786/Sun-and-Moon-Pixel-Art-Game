@@ -1,5 +1,9 @@
 # Development log
 
+## Session 7 — November 3, 2026
+
+Standing in a home arch used to do nothing when the chapter was not ready. If one partner arrives early, the game now explains the missing step: unsecured crossings, unfinished keepsakes, or a partner who has not reached home yet. The hint uses a short cooldown so it does not spam while they wait.
+
 ## Session 6 — November 2, 2026
 
 Final review pass. Movement and jump values now live as named constants shared with the timed-bridge fade threshold. Chapter 7's tip mentions the one-time fade warning. The README documents controls, Unity play steps, and the Play Mode validation menu. Earlier session changes were re-checked against the shared Simulate path used by live play and the editor assertions.

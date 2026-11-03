@@ -31,7 +31,7 @@ namespace SunAndMoon
         GUIStyle textStyle;
         Font font;
 
-        float elapsed, flash, toastTime;
+        float elapsed, flash, toastTime, homeHintCooldown;
         string toast = "";
         int retries;
 
@@ -116,13 +116,28 @@ namespace SunAndMoon
                 foreach (var h in hearts) if (!h.taken && h.owner == i && Vector2.Distance(p.position - new Vector2(0, 16), h.p) < 33) { h.taken = true; PlaySound(chime); }
             }
             UpdatePuzzles(0);
-            if (AllSecured() && HeartCount >= RequiredHearts && exitSun.Contains(players[0].position - Vector2.up * 8) && exitMoon.Contains(players[1].position - Vector2.up * 8))
+            bool sunHome = exitSun.Contains(players[0].position - Vector2.up * 8);
+            bool moonHome = exitMoon.Contains(players[1].position - Vector2.up * 8);
+            if (AllSecured() && HeartCount >= RequiredHearts && sunHome && moonHome)
             {
                 mode = Mode.Complete;
                 PlayerPrefs.SetInt("SunMoon.Unlocked", Mathf.Max(Unlocked, Mathf.Min(levelIndex + 2, 10)));
                 PlayerPrefs.SetInt("SunMoon.Hearts." + levelIndex, Mathf.Max(PlayerPrefs.GetInt("SunMoon.Hearts." + levelIndex), HeartCount)); PlayerPrefs.Save();
                 PlaySound(chime);
             }
+            else HintIfWaitingAtHome(sunHome, moonHome, dt);
+        }
+        // Standing in an exit arch used to fail silently when crossings, keepsakes, or a partner were still missing.
+        void HintIfWaitingAtHome(bool sunHome, bool moonHome, float dt)
+        {
+            homeHintCooldown = Mathf.Max(0, homeHintCooldown - dt);
+            if ((!sunHome && !moonHome) || homeHintCooldown > 0 || toastTime > 0) return;
+            if (!AllSecured()) toast = "Secure every crossing before home.";
+            else if (HeartCount < RequiredHearts) toast = "Gather the keepsakes first. " + HeartCount + " / " + RequiredHearts;
+            else if (sunHome != moonHome) toast = "Your partner still needs to reach home.";
+            else return;
+            toastTime = 2.4f;
+            homeHintCooldown = 3.5f;
         }
         void Move(Partner p, float dt)
         {
