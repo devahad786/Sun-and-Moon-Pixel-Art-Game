@@ -167,8 +167,14 @@ namespace SunAndMoon.Editor
                 game.LoadLevel(0); foreach(var b in game.Links){b.secured=true;b.active=true;}
                 Set(0,new Vector2(game.SunExit.center.x,game.SunExit.yMax)); Set(1,new Vector2(192,700)); Tick(Vector2.zero);
                 Check(game.Toast.IndexOf("partner",System.StringComparison.OrdinalIgnoreCase)>=0,"Waiting alone at a ready home must ask for the other partner.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, and shared exits verified.");
+                game.LoadLevel(1); Set(0,game.Links[0].plate); Set(1,new Vector2(1140,700)); Tick(Vector2.zero);
+                Check(!game.Links[0].active,"Sun must not power Moon's chapter two switch.");
+                Check(game.Toast.IndexOf("Moon",System.StringComparison.OrdinalIgnoreCase)>=0,"Wrong partner on a colored plate must be told who can hold it.");
+                game.LoadLevel(0); Set(0,new Vector2(275,596)); Set(1,new Vector2(192,700)); Tick(Vector2.zero);
+                Check(game.HeartCount==1,"Sun must collect the nearby keepsake.");
+                Check(game.Toast.IndexOf("Keepsake",System.StringComparison.OrdinalIgnoreCase)>=0,"Collecting a keepsake must confirm the find.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, plate ownership, keepsake toast, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, wrong-plate hints, keepsake toasts, and shared exits verified.");
             }
             finally
             {

@@ -1,5 +1,9 @@
 # Development log
 
+## Session 8 — November 4, 2026
+
+Keepsake pickups only played a soft chime before. Collecting one now shows a count toast, and finishing a required keepsake set says the way can open. Standing on a colored switch as the wrong partner also used to fail with no message; that now names who can hold the plate, with a short cooldown so the hint does not repeat every frame.
+
 ## Session 7 — November 3, 2026
 
 Standing in a home arch used to do nothing when the chapter was not ready. If one partner arrives early, the game now explains the missing step: unsecured crossings, unfinished keepsakes, or a partner who has not reached home yet. The hint uses a short cooldown so it does not spam while they wait.

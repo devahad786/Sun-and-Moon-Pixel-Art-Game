@@ -31,7 +31,7 @@ namespace SunAndMoon
         GUIStyle textStyle;
         Font font;
 
-        float elapsed, flash, toastTime, homeHintCooldown;
+        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown;
         string toast = "";
         int retries;
 
@@ -113,9 +113,16 @@ namespace SunAndMoon
                 if (p.position.y > 810) { Respawn(i); continue; }
                 foreach (var pool in pools)
                     if (p.position.x > pool.r.x + 4 && p.position.x < pool.r.xMax - 4 && p.position.y > pool.r.y + 1 && p.position.y <= pool.r.yMax + 12 && pool.owner != i) { Respawn(i); break; }
-                foreach (var h in hearts) if (!h.taken && h.owner == i && Vector2.Distance(p.position - new Vector2(0, 16), h.p) < 33) { h.taken = true; PlaySound(chime); }
+                foreach (var h in hearts) if (!h.taken && h.owner == i && Vector2.Distance(p.position - new Vector2(0, 16), h.p) < 33)
+                {
+                    h.taken = true; PlaySound(chime);
+                    if (RequiredHearts > 0 && HeartCount >= RequiredHearts) toast = "Keepsakes ready. The way can open.";
+                    else toast = "Keepsake found. " + HeartCount + " / 4";
+                    toastTime = 2.2f;
+                }
             }
             UpdatePuzzles(0);
+            HintWrongPlate(dt);
             bool sunHome = exitSun.Contains(players[0].position - Vector2.up * 8);
             bool moonHome = exitMoon.Contains(players[1].position - Vector2.up * 8);
             if (AllSecured() && HeartCount >= RequiredHearts && sunHome && moonHome)
@@ -138,6 +145,23 @@ namespace SunAndMoon
             else return;
             toastTime = 2.4f;
             homeHintCooldown = 3.5f;
+        }
+        // Colored plates used to ignore the wrong partner with no explanation.
+        void HintWrongPlate(float dt)
+        {
+            plateHintCooldown = Mathf.Max(0, plateHintCooldown - dt);
+            if (plateHintCooldown > 0 || toastTime > 0) return;
+            foreach (var b in links)
+            {
+                if (b.owner < 0 || b.secured) continue;
+                int wrong = 1 - b.owner;
+                if (!At(players[wrong], b.plate)) continue;
+                if (At(players[b.owner], b.plate)) continue;
+                toast = b.owner == 0 ? "Only Sun can hold this switch." : "Only Moon can hold this switch.";
+                toastTime = 2.4f;
+                plateHintCooldown = 3.5f;
+                return;
+            }
         }
         void Move(Partner p, float dt)
         {
