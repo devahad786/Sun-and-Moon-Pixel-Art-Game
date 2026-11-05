@@ -1,5 +1,9 @@
 # Development log
 
+## Session 9 — November 5, 2026
+
+Standing on the vault plate before gathering its keepsakes used to do nothing. The plate now explains how many hearts are still needed. Touching a shared checkpoint before the first crossing is secured also stayed silent; that now asks players to secure the first crossing before the save point can light.
+
 ## Session 8 — November 4, 2026
 
 Keepsake pickups only played a soft chime before. Collecting one now shows a count toast, and finishing a required keepsake set says the way can open. Standing on a colored switch as the wrong partner also used to fail with no message; that now names who can hold the plate, with a short cooldown so the hint does not repeat every frame.

@@ -31,7 +31,7 @@ namespace SunAndMoon
         GUIStyle textStyle;
         Font font;
 
-        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown;
+        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown, checkpointHintCooldown;
         string toast = "";
         int retries;
 
@@ -122,7 +122,8 @@ namespace SunAndMoon
                 }
             }
             UpdatePuzzles(0);
-            HintWrongPlate(dt);
+            HintPlateIssues(dt);
+            HintLockedCheckpoint(dt);
             bool sunHome = exitSun.Contains(players[0].position - Vector2.up * 8);
             bool moonHome = exitMoon.Contains(players[1].position - Vector2.up * 8);
             if (AllSecured() && HeartCount >= RequiredHearts && sunHome && moonHome)
@@ -146,21 +147,41 @@ namespace SunAndMoon
             toastTime = 2.4f;
             homeHintCooldown = 3.5f;
         }
-        // Colored plates used to ignore the wrong partner with no explanation.
-        void HintWrongPlate(float dt)
+        // Colored or keepsake-locked plates used to ignore the wrong state with no explanation.
+        void HintPlateIssues(float dt)
         {
             plateHintCooldown = Mathf.Max(0, plateHintCooldown - dt);
             if (plateHintCooldown > 0 || toastTime > 0) return;
             foreach (var b in links)
             {
-                if (b.owner < 0 || b.secured) continue;
-                int wrong = 1 - b.owner;
-                if (!At(players[wrong], b.plate)) continue;
-                if (At(players[b.owner], b.plate)) continue;
-                toast = b.owner == 0 ? "Only Sun can hold this switch." : "Only Moon can hold this switch.";
-                toastTime = 2.4f;
-                plateHintCooldown = 3.5f;
-                return;
+                if (b.secured) continue;
+                if (b.owner >= 0)
+                {
+                    int wrong = 1 - b.owner;
+                    if (At(players[wrong], b.plate) && !At(players[b.owner], b.plate))
+                    {
+                        toast = b.owner == 0 ? "Only Sun can hold this switch." : "Only Moon can hold this switch.";
+                        toastTime = 2.4f; plateHintCooldown = 3.5f; return;
+                    }
+                }
+                if (b.keepsakes <= 0 || HeartCount >= b.keepsakes) continue;
+                bool onPlate = b.owner < 0 ? (At(players[0], b.plate) || At(players[1], b.plate)) : At(players[b.owner], b.plate);
+                if (!onPlate) continue;
+                toast = "Need " + b.keepsakes + " keepsakes first. " + HeartCount + " / " + b.keepsakes;
+                toastTime = 2.4f; plateHintCooldown = 3.5f; return;
+            }
+        }
+        // The shared checkpoint stays dark until the first crossing is secured.
+        void HintLockedCheckpoint(float dt)
+        {
+            checkpointHintCooldown = Mathf.Max(0, checkpointHintCooldown - dt);
+            if (checkpoint == Vector2.zero || checkpointActive || links.Count == 0 || links[0].secured) return;
+            if (checkpointHintCooldown > 0 || toastTime > 0) return;
+            foreach (var p in players)
+            {
+                if (!At(p, checkpoint, 42)) continue;
+                toast = "Secure the first crossing to save this checkpoint.";
+                toastTime = 2.4f; checkpointHintCooldown = 3.5f; return;
             }
         }
         void Move(Partner p, float dt)
