@@ -31,7 +31,7 @@ namespace SunAndMoon
         GUIStyle textStyle;
         Font font;
 
-        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown, checkpointHintCooldown;
+        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown, checkpointHintCooldown, keepsakeHintCooldown;
         string toast = "";
         int retries;
 
@@ -113,14 +113,24 @@ namespace SunAndMoon
                 if (p.position.y > 810) { Respawn(i); continue; }
                 foreach (var pool in pools)
                     if (p.position.x > pool.r.x + 4 && p.position.x < pool.r.xMax - 4 && p.position.y > pool.r.y + 1 && p.position.y <= pool.r.yMax + 12 && pool.owner != i) { Respawn(i); break; }
-                foreach (var h in hearts) if (!h.taken && h.owner == i && Vector2.Distance(p.position - new Vector2(0, 16), h.p) < 33)
+                foreach (var h in hearts)
                 {
-                    h.taken = true; PlaySound(chime);
-                    if (RequiredHearts > 0 && HeartCount >= RequiredHearts) toast = "Keepsakes ready. The way can open.";
-                    else toast = "Keepsake found. " + HeartCount + " / 4";
-                    toastTime = 2.2f;
+                    if (h.taken || Vector2.Distance(p.position - new Vector2(0, 16), h.p) >= 33) continue;
+                    if (h.owner == i)
+                    {
+                        h.taken = true; PlaySound(chime);
+                        if (RequiredHearts > 0 && HeartCount >= RequiredHearts) toast = "Keepsakes ready. The way can open.";
+                        else toast = "Keepsake found. " + HeartCount + " / 4";
+                        toastTime = 2.2f;
+                    }
+                    else if (keepsakeHintCooldown <= 0 && toastTime <= 0)
+                    {
+                        toast = h.owner == 0 ? "That's Sun's keepsake." : "That's Moon's keepsake.";
+                        toastTime = 2.2f; keepsakeHintCooldown = 3.5f;
+                    }
                 }
             }
+            keepsakeHintCooldown = Mathf.Max(0, keepsakeHintCooldown - dt);
             UpdatePuzzles(0);
             HintPlateIssues(dt);
             HintLockedCheckpoint(dt);

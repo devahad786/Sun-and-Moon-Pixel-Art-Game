@@ -1,5 +1,9 @@
 # Development log
 
+## Session 10 — November 9, 2026
+
+Each keepsake belongs to Sun or Moon. Touching the wrong one used to do nothing. The partner now gets a short toast naming whose keepsake it is, with a cooldown so the message does not spam while they stand there. Correct pickups still collect and confirm as before.
+
 ## Session 9 — November 5, 2026
 
 Standing on the vault plate before gathering its keepsakes used to do nothing. The plate now explains how many hearts are still needed. Touching a shared checkpoint before the first crossing is secured also stayed silent; that now asks players to secure the first crossing before the save point can light.

@@ -179,8 +179,11 @@ namespace SunAndMoon.Editor
                 game.LoadLevel(8); Set(0,new Vector2(800,520)); Set(1,new Vector2(192,700)); Tick(Vector2.zero);
                 Check(!game.Links[0].secured,"Chapter nine first crossing starts unsecured.");
                 Check(game.Toast.IndexOf("checkpoint",System.StringComparison.OrdinalIgnoreCase)>=0,"Touching a locked checkpoint must ask for the first crossing first.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, plate ownership, keepsake toast, locked plate, locked checkpoint, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, wrong-plate hints, keepsake toasts, locked-plate hints, locked-checkpoint hints, and shared exits verified.");
+                game.LoadLevel(0); Set(0,new Vector2(192,700)); Set(1,new Vector2(275,596)); Tick(Vector2.zero);
+                Check(game.HeartCount==0,"Moon must not collect Sun's keepsake.");
+                Check(game.Toast.IndexOf("Sun",System.StringComparison.OrdinalIgnoreCase)>=0,"Touching a partner's keepsake must name its owner.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, plate ownership, keepsake toast, locked plate, locked checkpoint, wrong keepsake, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, wrong-plate hints, keepsake toasts, locked-plate hints, locked-checkpoint hints, wrong-keepsake hints, and shared exits verified.");
             }
             finally
             {
