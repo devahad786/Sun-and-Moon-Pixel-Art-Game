@@ -1,5 +1,9 @@
 # Development log
 
+## Session 11 — November 10, 2026
+
+Hazard pools used to teach their color rules only after a fall. Standing beside a pool that is unsafe for that partner now explains who it belongs to, and each pool carries a small SUN SAFE / MOON SAFE / UNSAFE label so the rule is readable before the toast appears.
+
 ## Session 10 — November 9, 2026
 
 Each keepsake belongs to Sun or Moon. Touching the wrong one used to do nothing. The partner now gets a short toast naming whose keepsake it is, with a cooldown so the message does not spam while they stand there. Correct pickups still collect and confirm as before.

@@ -182,8 +182,11 @@ namespace SunAndMoon.Editor
                 game.LoadLevel(0); Set(0,new Vector2(192,700)); Set(1,new Vector2(275,596)); Tick(Vector2.zero);
                 Check(game.HeartCount==0,"Moon must not collect Sun's keepsake.");
                 Check(game.Toast.IndexOf("Sun",System.StringComparison.OrdinalIgnoreCase)>=0,"Touching a partner's keepsake must name its owner.");
-                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, plate ownership, keepsake toast, locked plate, locked checkpoint, wrong keepsake, shared exits.");
-                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, wrong-plate hints, keepsake toasts, locked-plate hints, locked-checkpoint hints, wrong-keepsake hints, and shared exits verified.");
+                game.LoadLevel(0); Set(0,new Vector2(192,700)); Set(1,new Vector2(318,700)); Tick(Vector2.zero);
+                Check(Mathf.Abs(game.MoonPosition.y-700)<2,"Moon standing beside Sun's pool must not already fall in.");
+                Check(game.Toast.IndexOf("Sun",System.StringComparison.OrdinalIgnoreCase)>=0,"Standing beside a hostile pool must explain who it is safe for.");
+                Debug.Log("SUN & MOON: "+assertions+" assertions passed; 10 unique chapters, click-to-play, timed bridges, gates, lift, roof step, checkpoint, jump height, ground stop, respawn, fade warning, title toast clear, home hints, plate ownership, keepsake toast, locked plate, locked checkpoint, wrong keepsake, hazard hint, shared exits.");
+                System.IO.File.WriteAllText("Gameplay-validation.txt",assertions+" assertions passed across 10 unique levels. Startup, switches, ownership, physical crossings, keys, timers, lift cycle, lift-to-roof step, closed gates, checkpoint, variable jump, ground stop, hazard respawn, timed fade warning, title toast clear, home waiting hints, wrong-plate hints, keepsake toasts, locked-plate hints, locked-checkpoint hints, wrong-keepsake hints, hazard-pool hints, and shared exits verified.");
             }
             finally
             {

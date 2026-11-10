@@ -45,7 +45,7 @@ namespace SunAndMoon
         public void LoadLevel(int index)
         {
             levelIndex = Mathf.Clamp(index, 0, 9); mode = Mode.Playing;
-            elapsed = 0; retries = 0; homeHintCooldown = 0; plateHintCooldown = 0; checkpointHintCooldown = 0; keepsakeHintCooldown = 0; platforms.Clear(); pools.Clear(); hearts.Clear(); links.Clear(); lifts.Clear();
+            elapsed = 0; retries = 0; homeHintCooldown = 0; plateHintCooldown = 0; checkpointHintCooldown = 0; keepsakeHintCooldown = 0; hazardHintCooldown = 0; platforms.Clear(); pools.Clear(); hearts.Clear(); links.Clear(); lifts.Clear();
             RequiredHearts = 0; checkpoint = Vector2.zero; checkpointActive = false;
             players[0].spawn = new Vector2(132, 700); players[1].spawn = new Vector2(192, 700);
             exitSun = new Rect(1090, 628, 42, 72); exitMoon = new Rect(1145, 628, 42, 72);

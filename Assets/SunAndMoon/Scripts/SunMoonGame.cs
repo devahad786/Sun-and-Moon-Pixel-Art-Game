@@ -31,7 +31,7 @@ namespace SunAndMoon
         GUIStyle textStyle;
         Font font;
 
-        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown, checkpointHintCooldown, keepsakeHintCooldown;
+        float elapsed, flash, toastTime, homeHintCooldown, plateHintCooldown, checkpointHintCooldown, keepsakeHintCooldown, hazardHintCooldown;
         string toast = "";
         int retries;
 
@@ -134,6 +134,7 @@ namespace SunAndMoon
             UpdatePuzzles(0);
             HintPlateIssues(dt);
             HintLockedCheckpoint(dt);
+            HintNearHazard(dt);
             bool sunHome = exitSun.Contains(players[0].position - Vector2.up * 8);
             bool moonHome = exitMoon.Contains(players[1].position - Vector2.up * 8);
             if (AllSecured() && HeartCount >= RequiredHearts && sunHome && moonHome)
@@ -192,6 +193,28 @@ namespace SunAndMoon
                 if (!At(p, checkpoint, 42)) continue;
                 toast = "Secure the first crossing to save this checkpoint.";
                 toastTime = 2.4f; checkpointHintCooldown = 3.5f; return;
+            }
+        }
+        // Colored pools used to teach their rules only after a fall.
+        void HintNearHazard(float dt)
+        {
+            hazardHintCooldown = Mathf.Max(0, hazardHintCooldown - dt);
+            if (hazardHintCooldown > 0 || toastTime > 0) return;
+            for (int i = 0; i < 2; i++)
+            {
+                var p = players[i];
+                if (!p.grounded) continue;
+                foreach (var pool in pools)
+                {
+                    if (pool.owner == i) continue;
+                    bool inside = p.position.x > pool.r.x + 4 && p.position.x < pool.r.xMax - 4 && p.position.y > pool.r.y + 1 && p.position.y <= pool.r.yMax + 12;
+                    bool near = p.position.x > pool.r.x - 18 && p.position.x < pool.r.xMax + 18 && p.position.y > pool.r.y - 8 && p.position.y <= pool.r.yMax + 20;
+                    if (!near || inside) continue;
+                    toast = pool.owner == 2 ? "That pool is not safe for either of you."
+                        : pool.owner == 0 ? "That gold pool is only safe for Sun."
+                        : "That blue pool is only safe for Moon.";
+                    toastTime = 2.4f; hazardHintCooldown = 3.5f; return;
+                }
             }
         }
         void Move(Partner p, float dt)
@@ -376,6 +399,7 @@ namespace SunAndMoon
             Box(p.r.x, p.r.y + 5, p.r.width, 18, Color.Lerp(c, ink, .5f)); Box(p.r.x, p.r.y + 4, p.r.width, 3, c);
             for (int i = 0; i < p.r.width / 12; i++) { float yy = p.r.y + 8 + Mathf.Sin(Time.time * 2 + i) * 3; Box(p.r.x + i * 12, yy, 7, 2, c); }
             if (p.owner == 2) for (int i = 0; i < 5; i++) { Box(p.r.x + i * 8 + 2, p.r.y - 3, 5, 9, c); Box(p.r.x + i * 8 + 3, p.r.y - 7, 3, 4, c); }
+            Label(p.owner == 0 ? "SUN SAFE" : p.owner == 1 ? "MOON SAFE" : "UNSAFE", p.r.x - 10, p.r.y + 26, p.r.width + 20, 9, c, TextAnchor.MiddleCenter);
         }
         Texture2D MakePartner(bool moon)
         {
